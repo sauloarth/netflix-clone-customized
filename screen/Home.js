@@ -1,21 +1,13 @@
-import React from 'react';
-
+import React, { useState, useEffect } from 'react';
 import { StatusBar, Dimensions } from 'react-native';
-
 import { LinearGradient } from 'expo-linear-gradient';
-
 import styled from 'styled-components/native';
-
 import Header from '../components/Header';
 import Hero from '../components/Hero';
 import Movies from '../components/Movies';
+import { getLocation, filtrateForeignMovies, filtrateNationalMovies } from '../services/movieFilter';
 
-const api = [
-  require('../assets/movies/movie1.jpg'),
-  require('../assets/movies/movie2.jpg'),
-  require('../assets/movies/movie3.jpg'),
-  require('../assets/movies/movie4.jpg'),
-];
+const api = require('../assets/Movies.json')
 
 const Container = styled.ScrollView`
   flex: 1;
@@ -32,6 +24,27 @@ const Gradient = styled(LinearGradient)`
 `;
 
 const Home = () => {
+  const [nationalMovies, setNationalMovies] = useState()
+  const [foreignMovies, setForeignMovies] = useState()
+
+  useEffect(() => {
+
+    const getNationalMovies = async () => {
+      const geolocation = await getLocation()
+      const nationalMovies = await filtrateNationalMovies(api, geolocation)
+      setNationalMovies(nationalMovies)
+    }
+
+    const getForeignMovies = async () => {
+      const geolocation = await getLocation()
+      const foreignMovies = await filtrateForeignMovies(api, geolocation)
+      setForeignMovies(foreignMovies)
+    }
+
+    getNationalMovies()
+    getForeignMovies()
+  }, [])
+
   return (
     <>
       <StatusBar
@@ -53,8 +66,8 @@ const Home = () => {
             <Hero />
           </Gradient>
         </Poster>
-        <Movies label="Recomendados" item={api} />
-        <Movies label="Top 10" item={api} />
+        <Movies label="Recomendados" movies={foreignMovies} />
+        <Movies label="Nacionais" movies={nationalMovies} />
       </Container>
     </>
   );
